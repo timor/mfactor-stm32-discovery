@@ -1,0 +1,4 @@
+[submodule "mfactor"]
+	path = mfactor
+	url = https://github.com/timor/mfactor
+	branch = flash_image
