@@ -78,4 +78,4 @@ end
 task :default => [OUTPUT,:size,:disasm]
 
 CLEAN.include BUILD
-CLEAN.include "generated"
+CLOBBER.include "generated"
