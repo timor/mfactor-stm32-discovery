@@ -5,12 +5,14 @@ BINARY="image.elf"              # output binary
 # constants needed by the mfactor rake task
 MFACTOR_SRC_DIR="src/mfactor"   # local mfactor sources
 GENERATOR="Cortex"              # byte code generator backend
-MFACTOR_ROOT_VOCAB="listener"   # root vocabulary for dependency resolution
-START_WORD="listener"           # intepreter entry point
-# MFACTOR_DEPENDING_OBJECT="mfactor/src/interpreter.c" # file or task to which the dependencies of the mfactor rake task are added
+MFACTOR_ROOT_VOCAB="application"   # root vocabulary for dependency resolution
+START_WORD="application"           # intepreter entry point
+# file or task to which the dependencies of the mfactor rake task are added
+# MFACTOR_DEPENDING_OBJECTS=["build/mfactor_src_interpreter_ivm32_c.o"]
+MFACTOR_DEPENDING_OBJECTS=["build/mfactor_src_interpreter_c.o"]
 #TRANSLATION_YAML_FILE = "c_mfactor_trans.yml"
 
-import "#{MFACTOR}/tasks/stdlib.rake" # provides :stdlib rake target which does all the work
+import "#{MFACTOR}/tasks/mfactor.rake" # provides :mfactor rake target which does all the work
 
 BUILD="build"                   # output directory
 directory BUILD
@@ -34,7 +36,7 @@ OBJDUMP="#{PREFIX}-objdump"
 # STARTUP="src/startup_ARMCM3.S"
 STARTUP="#{CUBEMX}/Drivers/CMSIS/Device/ST/STM32F4xx/Source/Templates/gcc/startup_stm32f407xx.s"
 LOCAL_SRCS=FileList["src/**.c",STARTUP]
-MFACTOR_SRCS=FileList["#{MFACTOR}/src/[reader,interpreter]*.c"]
+MFACTOR_SRCS=FileList["#{MFACTOR}/src/reader.c","#{MFACTOR}/src/interpreter.c"]
 CUBEMX_SRCS=FileList["#{CUBEMX}/Src/*.c",
                      "#{CUBEMX}/Drivers/STM32F4xx_HAL_Driver/Src/*.c",
                      "#{CUBEMX}/Drivers/CMSIS/Device/ST/STM32F4xx/Source/Templates/system_stm32f4xx.c"]
@@ -52,6 +54,8 @@ def build_path(sourcefile)
   "#{BUILD}/"+sourcefile.gsub("/","_").ext("o")
 end
 
+file "build/mfactor_src_interpreter_ivm32.o" => "mfactor/src/ivm32.h"
+
 OBJS=[]
 SRCS.each do |f|
   o=build_path(f)
@@ -63,7 +67,7 @@ end
 
 OUTPUT="#{BUILD}/#{BINARY}"
 
-file OUTPUT => [:stdlib]+OBJS do 
+file OUTPUT => [:mfactor]+OBJS do
   sh "#{CC} #{LDFLAGS} #{OBJS.join(' ')} -o #{OUTPUT}"
 end
 
@@ -76,6 +80,9 @@ task :disasm => [OUTPUT] do
 end
 
 task :default => [OUTPUT,:size,:disasm]
+
+task :rebuild => [:clean,:force_image,:default]
+
 
 CLEAN.include BUILD
 CLOBBER.include "generated"

@@ -2,8 +2,7 @@ FLAGS="-g"
 OPT="0"
 DEFINES={
   __START: 'main',
-  DATA_START: '_sdata',
-  DATA_END: '_edata',
+  ATOLLIC_TRUESTUDIO: 1,
   CORTEX_M: 1,
   VM_MEM: 256,
   VM_DICT: 768,
